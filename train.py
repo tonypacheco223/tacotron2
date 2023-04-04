@@ -71,7 +71,12 @@ def prepare_directories_and_logger(output_directory, log_directory, rank):
 
 
 def load_model(hparams):
-    model = Tacotron2(hparams).cuda()
+    idevice = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = Tacotron2(hparams)
+    print(idevice)
+    model.to(idevice)
+  
+        
     if hparams.fp16_run:
         model.decoder.attention_layer.score_mask_value = finfo('float16').min
 
@@ -203,6 +208,7 @@ def train(output_directory, log_directory, checkpoint_path, warm_start, n_gpus,
     model.train()
     is_overflow = False
     # ================ MAIN TRAINNIG LOOP! ===================
+    print("maxEpochs", hparams.epochs)
     for epoch in range(epoch_offset, hparams.epochs):
         print("Epoch: {}".format(epoch))
         for i, batch in enumerate(train_loader):
